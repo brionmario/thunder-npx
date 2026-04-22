@@ -50,7 +50,7 @@ npx thunderid --setup -- --some-flag value
 
 - npm package: `thunderid`
 - binary: `thunderid`
-- source repo: <https://github.com/brionmario/thunder-npx>
+- source repo: <https://github.com/brionmario/thunder-installers>
 - Thunder project: <https://github.com/asgardeo/thunder>
 
 ## Notes

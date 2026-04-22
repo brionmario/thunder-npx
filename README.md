@@ -1,13 +1,14 @@
-# ⚡️ Thunder via npx
 
-This repository hosts npm packages that make Thunder tooling easy to run via `npx`, with minimal setup for end users.
+# ⚡️ Thunder Installers Lab
+
+This repository is the [Thunder](https://github.com/asgardeo/thunder) installers lab.
 
 ## Current Packages
 
-| Package | Folder | Description |
-| --- | --- | --- |
-| `thunderid` | [thunderid/](thunderid/) | CLI package to run Thunder with guided install/setup and quick start behavior. |
+| Package | Folder | Executor | Description |
+| --- | --- | --- | --- |
+| `thunderid` | [thunderid/](thunderid/) | npx | CLI package to run Thunder with guided install/setup and quick start behavior. |
 
 ## License
 
-MIT License. See [LICENSE](LICENSE) for details.
+Apache License 2.0. See [LICENSE](LICENSE) for details.
