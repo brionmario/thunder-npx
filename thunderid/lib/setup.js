@@ -48,4 +48,38 @@ function runSetup(installPath, args = []) {
   });
 }
 
-module.exports = { runSetup, findThunderRoot, findSetupScript };
+function runStart(installPath, args = []) {
+  if (process.platform === 'win32') {
+    const { note } = require('@clack/prompts');
+    note(
+      'Thunder requires a Unix shell to start.\n' +
+      'Open WSL or Git Bash, navigate to:\n' +
+      `  ${installPath}\n` +
+      'and run the Thunder binary directly.',
+      'Windows users'
+    );
+    process.exit(0);
+  }
+
+  const thunderRoot = findThunderRoot(installPath);
+  if (!thunderRoot) {
+    throw new Error(`Thunder installation not found in ${installPath}`);
+  }
+
+  // Prefer a dedicated start script, then fall back to the binary
+  const startScript = path.join(thunderRoot, 'start.sh');
+  if (fs.existsSync(startScript)) {
+    execFileSync('bash', ['start.sh', ...args], { cwd: thunderRoot, stdio: 'inherit' });
+    return;
+  }
+
+  const binary = path.join(thunderRoot, 'thunder');
+  if (fs.existsSync(binary)) {
+    execFileSync(binary, args, { cwd: thunderRoot, stdio: 'inherit' });
+    return;
+  }
+
+  throw new Error(`No start.sh or thunder binary found in ${thunderRoot}`);
+}
+
+module.exports = { runSetup, runStart, findThunderRoot, findSetupScript };

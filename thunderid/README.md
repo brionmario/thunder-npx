@@ -9,12 +9,14 @@ npx thunderid
 ```
 
 On first run, the CLI:
+
 1. Prompts for an install directory (defaults to `~/.thunderid/<version>`).
 2. Downloads the platform-specific Thunder release zip from GitHub.
 3. Extracts it and stores local state in `~/.thunderid/state.json`.
 4. Runs `setup.sh` from the extracted Thunder directory.
 
 On later runs with the same version, it reuses the cached installation.
+Different Thunder versions are tracked independently in `~/.thunderid/state.json`.
 
 ## Pass Arguments Through
 

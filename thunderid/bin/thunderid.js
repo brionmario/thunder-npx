@@ -23,9 +23,9 @@ const fs = require('fs');
 const { intro, outro, text, spinner, note, cancel, isCancel } = require('@clack/prompts');
 const colors = require('picocolors');
 
-const { readState, writeState, STATE_DIR } = require('../lib/state');
+const { readState, writeState, markSetupComplete, STATE_DIR } = require('../lib/state');
 const { downloadAndExtract, getLatestThunderVersion } = require('../lib/download');
-const { runSetup } = require('../lib/setup');
+const { runSetup, runStart } = require('../lib/setup');
 
 async function main() {
   // eslint-disable-next-line no-console
@@ -44,7 +44,8 @@ async function main() {
   }
 
   const state = readState();
-  const alreadyInstalled = state?.version === VERSION && fs.existsSync(state.installPath);
+  const versionState = state.installs[VERSION];
+  const alreadyInstalled = Boolean(versionState?.installPath && fs.existsSync(versionState.installPath));
 
   intro(
     `${
@@ -69,8 +70,21 @@ async function main() {
 
   let installPath;
 
+  // Already installed and previously set up — skip setup, start directly
+  if (alreadyInstalled && versionState.setupComplete) {
+    installPath = versionState.installPath;
+    note(`Thunder v${VERSION} is ready\n${installPath}`, 'Starting Thunder');
+    try {
+      runStart(installPath, process.argv.slice(2));
+    } catch (err) {
+      process.stderr.write(`\nFailed to start Thunder: ${err.message}\n`);
+      process.exit(1);
+    }
+    return;
+  }
+
   if (alreadyInstalled) {
-    installPath = state.installPath;
+    installPath = versionState.installPath;
     note(`Using Thunder v${VERSION}\n${installPath}`, 'Already installed');
   } else {
     const defaultPath = path.join(STATE_DIR, VERSION);
@@ -102,11 +116,12 @@ async function main() {
     s.stop(`Thunder v${VERSION} installed to ${installPath}`);
     writeState(VERSION, installPath);
 
-    outro('Starting Thunder setup...');
+    outro('Running Thunder setup for the first time...');
   }
 
   try {
     runSetup(installPath, process.argv.slice(2));
+    markSetupComplete(VERSION);
   } catch (err) {
     process.stderr.write(`\nSetup failed: ${err.message}\n`);
     process.exit(1);
