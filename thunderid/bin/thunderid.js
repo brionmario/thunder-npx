@@ -27,9 +27,26 @@ const { readState, writeState, markSetupComplete, STATE_DIR } = require('../lib/
 const { downloadAndExtract, getLatestThunderVersion } = require('../lib/download');
 const { runSetup, runStart } = require('../lib/setup');
 
+function parseCliArgs(argv) {
+  let forceSetup = false;
+  const forwardedArgs = [];
+
+  for (const arg of argv) {
+    if (arg === '--setup') {
+      forceSetup = true;
+      continue;
+    }
+    forwardedArgs.push(arg);
+  }
+
+  return { forceSetup, forwardedArgs };
+}
+
 async function main() {
   // eslint-disable-next-line no-console
   console.clear();
+
+  const { forceSetup, forwardedArgs } = parseCliArgs(process.argv.slice(2));
 
   const s = spinner();
   s.start('Fetching latest Thunder release...');
@@ -71,11 +88,11 @@ async function main() {
   let installPath;
 
   // Already installed and previously set up — skip setup, start directly
-  if (alreadyInstalled && versionState.setupComplete) {
+  if (alreadyInstalled && versionState.setupComplete && !forceSetup) {
     installPath = versionState.installPath;
     note(`Thunder v${VERSION} is ready\n${installPath}`, 'Starting Thunder');
     try {
-      runStart(installPath, process.argv.slice(2));
+      runStart(installPath, forwardedArgs);
     } catch (err) {
       process.stderr.write(`\nFailed to start Thunder: ${err.message}\n`);
       process.exit(1);
@@ -85,7 +102,11 @@ async function main() {
 
   if (alreadyInstalled) {
     installPath = versionState.installPath;
-    note(`Using Thunder v${VERSION}\n${installPath}`, 'Already installed');
+    if (forceSetup) {
+      note(`Re-running setup for Thunder v${VERSION}\n${installPath}`, 'Setup requested');
+    } else {
+      note(`Using Thunder v${VERSION}\n${installPath}`, 'Already installed');
+    }
   } else {
     const defaultPath = path.join(STATE_DIR, VERSION);
 
@@ -120,7 +141,7 @@ async function main() {
   }
 
   try {
-    runSetup(installPath, process.argv.slice(2));
+    runSetup(installPath, forwardedArgs);
     markSetupComplete(VERSION);
   } catch (err) {
     process.stderr.write(`\nSetup failed: ${err.message}\n`);
@@ -130,7 +151,7 @@ async function main() {
   note(`Setup complete for Thunder v${VERSION}\n${installPath}`, 'Starting Thunder');
 
   try {
-    runStart(installPath, process.argv.slice(2));
+    runStart(installPath, forwardedArgs);
   } catch (err) {
     process.stderr.write(`\nSetup succeeded but failed to start Thunder: ${err.message}\n`);
     process.exit(1);

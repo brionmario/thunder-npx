@@ -18,13 +18,26 @@ On first run, the CLI:
 On later runs with the same version, it reuses the cached installation.
 Different Thunder versions are tracked independently in `~/.thunderid/state.json`.
 
-## Pass Arguments Through
+## Supported Args
 
-Any extra args are forwarded to Thunder's `setup.sh`:
+- `--setup`: Force re-run setup even if this Thunder version was already set up.
+
+Examples:
+
+```bash
+# Normal run: start directly if already set up
+npx thunderid
+
+# Force setup again, then start
+npx thunderid --setup
+```
+
+Any other args are forwarded to Thunder during setup/start:
 
 ```bash
 npx thunderid -- --help
 npx thunderid -- --some-flag value
+npx thunderid --setup -- --some-flag value
 ```
 
 ## Requirements
