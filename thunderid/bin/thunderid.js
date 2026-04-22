@@ -68,20 +68,20 @@ async function main() {
     `${
       colors.blueBright(
         `
-████████╗██╗  ██╗██╗   ██╗███╗   ██╗██████╗ ███████╗██████╗
-╚══██╔══╝██║  ██║██║   ██║████╗  ██║██╔══██╗██╔════╝██╔══██╗
-   ██║   ███████║██║   ██║██╔██╗ ██║██║  ██║█████╗  ██████╔╝`,
+  ████████╗██╗  ██╗██╗   ██╗███╗   ██╗██████╗ ███████╗██████╗ ██╗██████╗
+  ╚══██╔══╝██║  ██║██║   ██║████╗  ██║██╔══██╗██╔════╝██╔══██╗██║██╔══██╗
+    ██║   ███████║██║   ██║██╔██╗ ██║██║  ██║█████╗  ██████╔╝██║██║  ██║`,
       ) +
       colors.cyanBright(
         `
-   ██║   ██╔══██║██║   ██║██║╚██╗██║██║  ██║██╔══╝  ██╔══██╗
-   ██║   ██║  ██║╚██████╔╝██║ ╚████║██████╔╝███████╗██║  ██║
-   ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚═════╝ ╚══════╝╚═╝  ╚═╝
+    ██║   ██╔══██║██║   ██║██║╚██╗██║██║  ██║██╔══╝  ██╔══██╗██║██║  ██║
+    ██║   ██║  ██║╚██████╔╝██║ ╚████║██████╔╝███████╗██║  ██║██║██████╔╝
+    ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚═════╝ ╚══════╝╚═╝  ╚═╝╚═╝╚═════╝
 `,
       )
     }\n` +
-      `          ${colors.yellow('⚡')} ${colors.bold(colors.white(`Thunder v${VERSION}`))}${colors.dim(
-        colors.gray(' · Lightweight Identity Server'),
+      `          ${colors.yellow('⚡')} ${colors.bold(colors.white(`ThunderID v${VERSION}`))}${colors.dim(
+        colors.gray(' · The Go-based Lightweight Identity Server'),
       )}\n`,
   );
 
@@ -90,11 +90,11 @@ async function main() {
   // Already installed and previously set up — skip setup, start directly
   if (alreadyInstalled && versionState.setupComplete && !forceSetup) {
     installPath = versionState.installPath;
-    note(`Thunder v${VERSION} is ready\n${installPath}`, 'Starting Thunder');
+    note(`ThunderID v${VERSION} is ready\n${installPath}`, 'Starting ThunderID');
     try {
       runStart(installPath, forwardedArgs);
     } catch (err) {
-      process.stderr.write(`\nFailed to start Thunder: ${err.message}\n`);
+      process.stderr.write(`\nFailed to start ThunderID: ${err.message}\n`);
       process.exit(1);
     }
     return;
@@ -103,9 +103,9 @@ async function main() {
   if (alreadyInstalled) {
     installPath = versionState.installPath;
     if (forceSetup) {
-      note(`Re-running setup for Thunder v${VERSION}\n${installPath}`, 'Setup requested');
+      note(`Re-running setup for ThunderID v${VERSION}\n${installPath}`, 'Setup requested');
     } else {
-      note(`Using Thunder v${VERSION}\n${installPath}`, 'Already installed');
+      note(`Using ThunderID v${VERSION}\n${installPath}`, 'Already installed');
     }
   } else {
     const defaultPath = path.join(STATE_DIR, VERSION);
@@ -134,10 +134,10 @@ async function main() {
       process.exit(1);
     }
 
-    s.stop(`Thunder v${VERSION} installed to ${installPath}`);
+    s.stop(`ThunderID v${VERSION} installed to ${installPath}`);
     writeState(VERSION, installPath);
 
-    outro('Running Thunder setup for the first time...');
+    outro('Running ThunderID setup for the first time...');
   }
 
   try {
@@ -148,12 +148,12 @@ async function main() {
     process.exit(1);
   }
 
-  note(`Setup complete for Thunder v${VERSION}\n${installPath}`, 'Starting Thunder');
+  note(`Setup complete for ThunderID v${VERSION}\n${installPath}`, 'Starting ThunderID');
 
   try {
     runStart(installPath, forwardedArgs);
   } catch (err) {
-    process.stderr.write(`\nSetup succeeded but failed to start Thunder: ${err.message}\n`);
+    process.stderr.write(`\nSetup succeeded but failed to start ThunderID: ${err.message}\n`);
     process.exit(1);
   }
 }
