@@ -6,6 +6,7 @@ const { spawnSync, execSync } = require('child_process');
 const { intro, outro, select, text, confirm, spinner, note, isCancel, cancel } = require('@clack/prompts');
 const colors = require('picocolors');
 const { getLatestThunderVersion } = require('./download');
+const { readState } = require('./state');
 const { loadRecipes } = require('../recipes/index');
 
 function getDockerfileContent(version) {
@@ -112,16 +113,22 @@ async function deploy(_args) {
 
   intro(colors.bold('⚡ ThunderID') + colors.dim(' — Deploy'));
 
-  const s = spinner();
-  s.start('Fetching latest Thunder release...');
   let version;
-  try {
-    version = await getLatestThunderVersion();
-    s.stop(`Thunder v${version}`);
-  } catch (err) {
-    s.stop('Could not fetch latest Thunder release.');
-    process.stderr.write(`\nError: ${err.message}\n`);
-    process.exit(1);
+  const localState = readState();
+  if (localState.lastUsedVersion) {
+    version = localState.lastUsedVersion;
+    note(`Deploying the version you tested locally: v${version}`, 'Version');
+  } else {
+    const s = spinner();
+    s.start('Fetching latest Thunder release...');
+    try {
+      version = await getLatestThunderVersion();
+      s.stop(`Thunder v${version}`);
+    } catch (err) {
+      s.stop('Could not fetch latest Thunder release.');
+      process.stderr.write(`\nError: ${err.message}\n`);
+      process.exit(1);
+    }
   }
 
   const recipes = loadRecipes();
