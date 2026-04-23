@@ -15,7 +15,7 @@ function getDeploymentYamlContent() {
   return [
     'server:',
     '  hostname: "0.0.0.0"',
-    '  port: 8090',
+    '  port: __SERVER_PORT__',
     '  http_only: true',
     '  public_url: "__PUBLIC_URL__"',
     '',
@@ -81,7 +81,10 @@ if [ -z "$PUBLIC_URL" ]; then
   fi
 fi
 
-# Fill in deployment.yaml placeholders with the resolved public URL.
+# Railway (and other platforms) inject PORT — use it so the proxy routes to the right port.
+SERVER_PORT="\${PORT:-8090}"
+
+# Fill in deployment.yaml placeholders with the resolved public URL and port.
 DEPLOY_YAML="repository/conf/deployment.yaml"
 if [ -n "$PUBLIC_URL" ]; then
   PUBLIC_HOST=$(echo "$PUBLIC_URL" | sed 's|https://||; s|http://||; s|[:/].*||')
@@ -90,18 +93,19 @@ if [ -n "$PUBLIC_URL" ]; then
     GATE_PORT="443"
   else
     GATE_SCHEME="http"
-    GATE_PORT="8090"
+    GATE_PORT="$SERVER_PORT"
   fi
 else
-  PUBLIC_URL="http://localhost:8090"
+  PUBLIC_URL="http://localhost:$SERVER_PORT"
   PUBLIC_HOST="localhost"
   GATE_SCHEME="http"
-  GATE_PORT="8090"
+  GATE_PORT="$SERVER_PORT"
 fi
 sed -i "s|__PUBLIC_URL__|$PUBLIC_URL|g" "$DEPLOY_YAML"
 sed -i "s|__PUBLIC_HOST__|$PUBLIC_HOST|g" "$DEPLOY_YAML"
 sed -i "s|__GATE_SCHEME__|$GATE_SCHEME|g" "$DEPLOY_YAML"
 sed -i "s|__GATE_PORT__|$GATE_PORT|g" "$DEPLOY_YAML"
+sed -i "s|__SERVER_PORT__|$SERVER_PORT|g" "$DEPLOY_YAML"
 
 # Use /data as sentinel location when a volume is mounted (e.g. Fly.io SQLite),
 # otherwise fall back to WORKDIR (resets on redeploy, which is correct since the DB does too).
@@ -123,11 +127,13 @@ if [ ! -f "$SENTINEL" ]; then
   # In newer Thunder versions, setup.sh invokes start.sh internally and captures that PID.
   # Killing start.sh leaves the Thunder binary and the embedded OpenFGA server as orphans.
   # start.sh refuses to run if either port is occupied, which exits the container → 502.
-  lsof -ti tcp:8090 2>/dev/null | xargs kill -9 2>/dev/null || true
+  lsof -ti tcp:"$SERVER_PORT" 2>/dev/null | xargs kill -9 2>/dev/null || true
   lsof -ti tcp:9090 2>/dev/null | xargs kill -9 2>/dev/null || true
   sleep 1
 fi
 
+# Forward the resolved port to start.sh so Thunder binds on Railway's expected port.
+export BACKEND_PORT="$SERVER_PORT"
 exec bash start.sh
 `;
 }
