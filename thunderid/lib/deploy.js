@@ -2,7 +2,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const { intro, outro, select, text, spinner, note, isCancel, cancel } = require('@clack/prompts');
+const { spawnSync, execSync } = require('child_process');
+const { intro, outro, select, text, confirm, spinner, note, isCancel, cancel } = require('@clack/prompts');
 const colors = require('picocolors');
 const { getLatestThunderVersion } = require('./download');
 const { loadRecipes } = require('../recipes/index');
@@ -33,6 +34,50 @@ CMD ["bash", "start.sh"]
 `;
 }
 
+function isCLIAvailable(cliName) {
+  if (!cliName) return true;
+  const result = spawnSync(cliName, ['--version'], { stdio: 'pipe' });
+  return !result.error && result.status === 0;
+}
+
+async function ensureCLI(recipe) {
+  if (!recipe.cliName || isCLIAvailable(recipe.cliName)) return;
+
+  note(
+    `${colors.cyan(recipe.cliName)} is not installed.\n\nInstall command:\n  ${colors.bold(recipe.installCmd)}`,
+    `${recipe.displayName} — setup needed`
+  );
+
+  const shouldInstall = await confirm({
+    message: `Install ${colors.cyan(recipe.cliName)} now?`,
+    initialValue: true,
+  });
+
+  if (isCancel(shouldInstall) || !shouldInstall) {
+    cancel(`Install ${recipe.cliName} and re-run to continue.`);
+    process.exit(0);
+  }
+
+  const s = spinner();
+  s.start(`Installing ${recipe.cliName}...`);
+  try {
+    execSync(recipe.installCmd, { stdio: 'pipe' });
+    s.stop(`${recipe.cliName} installed`);
+  } catch (err) {
+    s.stop(`Install failed: ${err.message}`);
+    note(`Run this manually, then re-run deploy:\n  ${colors.bold(recipe.installCmd)}`, 'Manual install needed');
+    process.exit(1);
+  }
+
+  if (!isCLIAvailable(recipe.cliName)) {
+    note(
+      `Installed but ${colors.cyan(recipe.cliName)} isn't on PATH yet.\n\nRestart your terminal, then run:\n  ${colors.bold('npx thunderid deploy')}`,
+      'Restart terminal needed'
+    );
+    process.exit(0);
+  }
+}
+
 async function deploy(_args) {
   // eslint-disable-next-line no-console
   console.clear();
@@ -53,12 +98,19 @@ async function deploy(_args) {
 
   const recipes = loadRecipes();
 
+  // Check CLI availability for each recipe upfront
+  const availability = Object.fromEntries(
+    recipes.map((r) => [r.id, isCLIAvailable(r.cliName)])
+  );
+
   const recipeId = await select({
     message: 'Deploy to which platform?',
     options: recipes.map((r) => ({
       value: r.id,
       label: r.displayName,
-      hint: r.description,
+      hint: availability[r.id]
+        ? r.description
+        : `${r.description} — ${colors.yellow(`needs ${r.cliName}`)}`,
     })),
   });
 
@@ -68,6 +120,9 @@ async function deploy(_args) {
   }
 
   const recipe = recipes.find((r) => r.id === recipeId);
+
+  // Install CLI if missing, then check auth
+  await ensureCLI(recipe);
 
   try {
     await recipe.preflight();

@@ -30,16 +30,10 @@ const fly = {
   id: 'fly',
   displayName: 'Fly.io',
   description: 'Free tier, persistent volumes for SQLite, single command',
+  cliName: 'flyctl',
+  installCmd: 'curl -L https://fly.io/install.sh | sh',
 
   async preflight() {
-    const check = spawnSync('flyctl', ['version'], { stdio: 'pipe' });
-    if (check.status !== 0 || check.error) {
-      throw new Error(
-        'flyctl is not installed.\n' +
-        'Install: curl -L https://fly.io/install.sh | sh\n' +
-        'Docs: https://fly.io/docs/hands-on/install-flyctl/'
-      );
-    }
     const auth = spawnSync('flyctl', ['auth', 'whoami'], { stdio: 'pipe' });
     if (auth.status !== 0) {
       log.info('Not logged in to Fly.io — opening browser to authenticate...');

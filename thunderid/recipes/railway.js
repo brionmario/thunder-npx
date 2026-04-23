@@ -21,16 +21,10 @@ const railway = {
   id: 'railway',
   displayName: 'Railway',
   description: 'Simple deploys, built-in managed Postgres option',
+  cliName: 'railway',
+  installCmd: 'npm install -g @railway/cli',
 
   async preflight() {
-    const check = spawnSync('railway', ['--version'], { stdio: 'pipe' });
-    if (check.status !== 0 || check.error) {
-      throw new Error(
-        'Railway CLI is not installed.\n' +
-        'Install: npm install -g @railway/cli\n' +
-        'Docs: https://docs.railway.app/develop/cli'
-      );
-    }
     const auth = spawnSync('railway', ['whoami'], { stdio: 'pipe' });
     if (auth.status !== 0) {
       log.info('Not logged in to Railway — opening browser to authenticate...');
