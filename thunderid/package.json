@@ -1,6 +1,6 @@
 {
   "name": "thunderid",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Run Thunder — The lightweight fully open-source identity server — instantly via npx",
   "bin": {
     "thunderid": "./bin/thunderid.js"
