@@ -2,6 +2,7 @@
 
 const { execSync, spawnSync } = require('child_process');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { log } = require('@clack/prompts');
 const colors = require('picocolors');
@@ -32,6 +33,7 @@ const fly = {
   description: 'Free tier, persistent volumes for SQLite, single command',
   cliName: 'flyctl',
   installCmd: 'curl -L https://fly.io/install.sh | sh',
+  postInstallPath: path.join(os.homedir(), '.fly', 'bin'),
 
   async preflight() {
     const auth = spawnSync('flyctl', ['auth', 'whoami'], { stdio: 'pipe' });

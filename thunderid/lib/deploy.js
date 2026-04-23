@@ -69,6 +69,11 @@ async function ensureCLI(recipe) {
     process.exit(1);
   }
 
+  // Patch PATH for installers that drop binaries outside the default PATH
+  if (recipe.postInstallPath) {
+    process.env.PATH = `${recipe.postInstallPath}${path.delimiter}${process.env.PATH}`;
+  }
+
   if (!isCLIAvailable(recipe.cliName)) {
     note(
       `Installed but ${colors.cyan(recipe.cliName)} isn't on PATH yet.\n\nRestart your terminal, then run:\n  ${colors.bold('npx thunderid deploy')}`,
