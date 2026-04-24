@@ -5,7 +5,7 @@ const railway = require('./railway');
 const render = require('./render');
 
 function loadRecipes() {
-  return [fly, railway, render];
+  return [railway, fly, render];
 }
 
 module.exports = { loadRecipes };

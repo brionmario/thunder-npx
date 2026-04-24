@@ -31,6 +31,7 @@ const fly = {
   id: 'fly',
   displayName: 'Fly.io',
   description: 'Free tier, persistent volumes for SQLite, single command',
+  comingSoon: true,
   cliName: 'flyctl',
   installCmd: 'curl -L https://fly.io/install.sh | sh',
   postInstallPath: path.join(os.homedir(), '.fly', 'bin'),

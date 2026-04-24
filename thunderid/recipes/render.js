@@ -40,6 +40,7 @@ const render = {
   id: 'render',
   displayName: 'Render',
   description: 'Free tier web services — generates files, requires GitHub',
+  comingSoon: true,
 
   async preflight() {
     // Render has no CLI for automated deploys; nothing to check

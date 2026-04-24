@@ -241,12 +241,16 @@ async function deploy(_args) {
 
   const recipeId = await select({
     message: 'Deploy to which platform?',
+    initialValue: 'railway',
     options: recipes.map((r) => ({
       value: r.id,
-      label: r.displayName,
-      hint: availability[r.id]
-        ? r.description
-        : `${r.description} — ${colors.yellow(`needs ${r.cliName}`)}`,
+      label: r.comingSoon ? colors.dim(r.displayName) : r.displayName,
+      hint: r.comingSoon
+        ? colors.dim('Coming soon')
+        : availability[r.id]
+          ? r.description
+          : `${r.description} — ${colors.yellow(`needs ${r.cliName}`)}`,
+      disabled: r.comingSoon ?? false,
     })),
   });
 
